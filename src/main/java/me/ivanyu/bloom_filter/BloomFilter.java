@@ -32,8 +32,10 @@ public class BloomFilter<T> {
         if (capacity <= 0)
             throw new IllegalArgumentException("capacity must be in (0, 2^63 - 1)");
 
-        this.m = (int)Math.round((-capacity * Math.log(p)) / Math.pow(Math.log(2), 2));
-        this.k = (int)Math.round(m * Math.log(2) / capacity);
+        this.m = Math.max(
+                1, (int)Math.round((-capacity * Math.log(p)) / Math.pow(Math.log(2), 2)));
+        this.k = Math.max(
+                1, (int)Math.round(m * Math.log(2) / capacity));
         this.filter = new BitSet(m);
     }
 
@@ -70,7 +72,7 @@ public class BloomFilter<T> {
         int h = 0;
         for (int i = 0; i < k; i++) {
             h = MurmurHash.hash(data, h);
-            final int idx = Math.abs(k % m);
+            final int idx = Math.abs(h % m);
             filter.set(idx);
         }
     }
@@ -92,7 +94,7 @@ public class BloomFilter<T> {
         int h = 0;
         for (int i = 0; i < k; i++) {
             h = MurmurHash.hash(data, h);
-            final int idx = Math.abs(k % m);
+            final int idx = Math.abs(h % m);
             if (!filter.get(idx))
                 return false;
         }
@@ -100,7 +102,7 @@ public class BloomFilter<T> {
         return true;
     }
 
-    private final byte[] getData(final T value) {
+    private byte[] getData(final T value) {
         return value.toString().getBytes(Charset.forName("UTF-8"));
     }
 }
